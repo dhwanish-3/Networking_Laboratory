@@ -14,7 +14,7 @@
 
 typedef struct sockaddr SA;
 
-int main (int argc, char **argv){
+int main (int argc, char **argv) {
     int sockfd, n;
     char recvline [MAXLINE + 1];
     struct sockaddr_in servaddr;
@@ -44,7 +44,7 @@ int main (int argc, char **argv){
         printf("Connect Error.\n");
     }
 
-    while ((n=read(sockfd, recvline, MAXLINE)) > 0){
+    while ((n = read(sockfd, recvline, MAXLINE)) > 0){
     // reads server reply.
         recvline[n] =0;
 
@@ -53,7 +53,7 @@ int main (int argc, char **argv){
         }
     }
 
-    if (n <0){
+    if (n < 0){
         printf("read error");
     }
     return 0;
