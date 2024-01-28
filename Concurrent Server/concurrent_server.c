@@ -54,17 +54,33 @@ int main (int argc, char **argv)
   //close listening socket
   close (listenfd);
 
-  while ( (n = recv(connfd, buf, MAXLINE,0)) > 0)  {
-   printf("%s","String received from and resent to the client:");
-   puts(buf);
-   send(connfd, buf, n, 0);
-  }
+    while ( (n = recv(connfd, buf, MAXLINE,0)) > 0)  {
+        printf("%s","String received from and resent to the client:");
+        puts(buf);
+        int i = 0;
+        
+        while (i < n) {
+            if (buf[i] >= 'a' && buf[i] <= 'z') {
+                buf[i] = (char)buf[i] - 32;
+            } else if (buf[i] >= 'A' && buf[i] <= 'Z') {
+                buf[i] = (char)buf[i] + 32;
+            }
+            i++;
+        }
+        if (strlen(buf) >= 3 && (buf[0] == 'b' && buf[1] == 'y' && buf[2] == 'e') || (buf[0] =='B' && buf[1] == 'Y' && buf[2] == 'E')) {
+            close(connfd);
+            exit(0);
+        }
+        send(connfd, buf, n, 0); 
+    }
 
-  if (n < 0)
-   printf("%s\n", "Read error");
-  exit(0);
- }
- //close socket of the server
- close(connfd);
-}
+    if (n < 0) {
+        printf("%s\n", "Read  error");
+    }
+
+    exit(0);
+    }
+    //close socket of the server
+    close(connfd);
+    }
 }
