@@ -14,10 +14,11 @@
 
 typedef struct sockaddr SA;
 
-int main (int argc, char **argv){
+int main(int argc, char **argv)
+{
     int listenfd, connfd;
     struct sockaddr_in servaddr, cliaddr;
-    char buff [MAXLINE];
+    char buff[MAXLINE];
     time_t ticks;
     int port;
     socklen_t len;
@@ -30,15 +31,15 @@ int main (int argc, char **argv){
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(port);
 
-    bind(listenfd, (SA *) &servaddr, sizeof(servaddr));
+    bind(listenfd, (SA *)&servaddr, sizeof(servaddr));
     printf("Server is waiting connection at port %d\t\n", port);
     listen(listenfd, LISTENQ);
 
-    for ( ; ; ) {
+    for (;;)
+    {
         len = sizeof(cliaddr);
-        connfd = accept(listenfd, (SA *) &cliaddr, &len);
-        printf("Connection from %s, port %d\n", inet_ntop(AF_INET,
-        &cliaddr.sin_addr.s_addr, buff, sizeof(buff)), ntohs(cliaddr.sin_port));
+        connfd = accept(listenfd, (SA *)&cliaddr, &len);
+        printf("Connection from %s, port %d\n", inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, buff, sizeof(buff)), ntohs(cliaddr.sin_port));
         ticks = time(NULL);
         snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
         write(connfd, buff, strlen(buff));
