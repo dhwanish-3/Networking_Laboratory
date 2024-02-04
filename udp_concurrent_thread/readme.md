@@ -2,8 +2,8 @@
 
 - compile both server and client files using
 ```
-gcc -o daytime_server daytime_server.c
-gcc -o daytime_client daytime_client.c
+gcc -o udp_server udp_server.c -pthread
+gcc -o udp_client udp_client.c
 ```
 or use the Makefile
 ```
@@ -12,10 +12,10 @@ make
 
 - **run server using**
 ```
-./daytime_server <PORT_NUMBER>
+./udp_server
 ```
 
 - **run client using**
 ```
-./daytime_client <IP_ADDRESS> <PORT_NUMBER>
+./udp_client <IP_ADDRESS>
 ``` 
