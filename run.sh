@@ -5,7 +5,9 @@ file=$(find . -name "*.c" -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -
 
 # Get the directory and filename without extension
 dir=$(dirname "$file")
+echo $dir
 filename=$(basename "$file" | cut -f 1 -d '.')
+echo "last modified file: $filename"
 
 # compiling the files using 
 for FILE in $dir/*.c; do
@@ -22,10 +24,12 @@ server=$base"_server"
 client=$base"_client"
 
 # change directory
+echo "changing directory to $dir"
 cd "$dir"
+
 # run the server
 echo "running server $server in the background"
-./$server &
+"./$server" &
 
 # getting the ip address
 ipaddress=$(hostname -I | cut -f1 -d' ')
@@ -33,4 +37,4 @@ ipaddress=$(hostname -I | cut -f1 -d' ')
 # run the client
 echo "running client $client"
 
-./$client $ipaddress
+"./$client" "$ipaddress"
