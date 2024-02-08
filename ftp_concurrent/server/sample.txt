@@ -1,0 +1,5 @@
+This is a sample text file created for testing purpose
+This file is found at the server
+Upon request from the client it will be sent to the client
+
+Hope this works...
