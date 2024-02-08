@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     // additional checks can be inserted
     if (argc != 2)
     {
-        perror("Usage: TCPClient <IP address of the server");
+        perror("Usage: TCPClient <IP address of the server>");
         exit(1);
     }
 

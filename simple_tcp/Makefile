@@ -4,13 +4,13 @@ CFLAGS = -o
 
 all: program
 
-program: server client
+program: simple_server simple_client
 
-server: server.c
-	$(CC) $(CFLAGS) server server.c
+simple_server: simple_server.c
+	$(CC) $(CFLAGS) simple_server simple_server.c
 
-client: client.c
-	$(CC) $(CFLAGS) client client.c
+simple_client: simple_client.c
+	$(CC) $(CFLAGS) simple_client simple_client.c
 
 clean:
-	rm -f program server client
+	rm -f program simple_server simple_client
