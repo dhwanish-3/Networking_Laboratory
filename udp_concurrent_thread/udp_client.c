@@ -16,8 +16,7 @@ int main(int argc, char **argv)
     struct sockaddr_in servaddr;
     char sendline[MAXLINE], recvline[MAXLINE];
 
-    // basic check of the arguments
-    // additional checks can be inserted
+    // basic check for number of arguments
     if (argc != 2)
     {
         perror("Usage: TCPClient <IP address of the server>");
@@ -32,7 +31,7 @@ int main(int argc, char **argv)
         exit(2);
     }
 
-    // Creation of the socket
+    // Initialization of the socket structure
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = inet_addr(argv[1]);

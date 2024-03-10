@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #define SIZE 1024
+#define port 8080
 
 void send_file(FILE *fp, int sockfd)
 {
@@ -23,8 +24,7 @@ void send_file(FILE *fp, int sockfd)
 
 int main()
 {
-    int port = 8080;
-    int e;
+    int error;
 
     int sockfd, new_sock;
     struct sockaddr_in server_addr, new_addr;
@@ -43,16 +43,16 @@ int main()
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // Bind to any available network interface
     server_addr.sin_port = htons(port);              // Set the port number
 
-    e = bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)); // Bind the socket to the server address
-    if (e < 0)
+    error = bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)); // Bind the socket to the server address
+    if (error < 0)
     {
         perror("Error in Binding");
         exit(1);
     }
     printf("Binding Successful.\n");
 
-    e = listen(sockfd, 10); // Listen for incoming connections
-    if (e == 0)
+    error = listen(sockfd, 10); // Listen for incoming connections
+    if (error == 0)
     {
         printf("Listening...\n");
     }
@@ -68,7 +68,7 @@ int main()
         // accept a connection
         new_sock = accept(sockfd, (struct sockaddr *)&new_addr, &addr_size); // Accept a new connection
 
-        printf("%s\n", "Received request...");
+        printf("Received request...");
         pid_t childpid;
 
         if ((childpid = fork()) == 0)
@@ -82,7 +82,7 @@ int main()
             if (fp == NULL)
             {
                 perror("FILE does not exist");
-                exit(2);
+                exit(2); // Exit the child process
             }
             send_file(fp, new_sock); // Send the file to the client
             printf("Data written in the text file.\n");

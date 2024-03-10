@@ -11,6 +11,7 @@
 
 // total number of requests so far
 int total_requests = 0;
+// data array to store temperature and battery level from clients
 int data[MAX_STATION_NUM][2];
 
 // The arguments needed to send a response
@@ -36,7 +37,6 @@ static void *send_response(void *arg)
     args = (struct thread_arguments *)arg;
 
     memset(&out, 0, MAXLINE);
-    // sprintf(out, "%5.1f", forecast_for(args->station));
 
     // Print the arguments
     printf("Station Index: %d\n", args->station_index);
@@ -85,7 +85,7 @@ int main(void)
     }
     char in[MAXLINE];
     int fd;
-    pthread_t helper;
+    pthread_t helper; // A thread to handle the response
     struct sockaddr_in address, client_address;
     struct thread_arguments *args;
     socklen_t client_length = sizeof(struct sockaddr);
