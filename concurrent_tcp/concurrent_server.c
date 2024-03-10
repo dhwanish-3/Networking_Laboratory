@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
             while ((n = recv(connfd, buf, MAXLINE, 0)) > 0)
             {
-                printf("%s", "String received from and resent to the client:");
+                printf("%s", "String received the client:");
                 puts(buf);
                 int i = 0;
 

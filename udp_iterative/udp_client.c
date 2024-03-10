@@ -30,7 +30,7 @@ int main(int argc, char **argv)
         fgets(buffer, BUFFER_SIZE, stdin);                                                                // Read input from the user
         sendto(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&server_addr, client_len);              // Send data to the server
         int len = recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&server_addr, &client_len); // Receive data from the server
-        printf("%s", "String received from the client:");                                                 // Print a message
+        printf("%s", "String received from the Server:");                                                 // Print a message
         puts(buffer);                                                                                     // Print the received data
         bzero(buffer, BUFFER_SIZE);                                                                       // Clear the buffer
     }

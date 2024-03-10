@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 
     send(sockfd, filename, SIZE, 0); // Send filename to the server
 
-    printf(" File name send successfully. \n");
+    printf(" File name sent successfully. \n");
     write_file(sockfd, filename); // Write received data to file
 
     printf("Data written in the file successfully.\n");
