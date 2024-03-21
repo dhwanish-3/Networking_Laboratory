@@ -6,54 +6,55 @@
 #include <string.h>
 #include <unistd.h>
 
-#define MAXLINE 40     /*max text line length*/
-#define SERV_PORT 3000 /*port*/
-#define LISTENQ 8      /*maximum number of client connections */
+#define BUFFER_SIZE 1024
+#define SERV_PORT 3000
+#define LISTENQ 8 /*maximum number of client connections */
 
 int main(int argc, char **argv)
 {
-  int listenfd, connfd, n;
-  socklen_t clilen;
-  char buf[MAXLINE];
-  struct sockaddr_in cliaddr, servaddr;
+  char buffer[BUFFER_SIZE];
+  struct sockaddr_in client_addr, server_addr;
+  socklen_t socket_len = sizeof(struct sockaddr);
 
   // creation of the socket
-  listenfd = socket(AF_INET, SOCK_STREAM, 0);
-
+  int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (socket_fd < 0)
+  {
+    perror("Error creating socket\n");
+    exit(1);
+  }
   // preparation of the socket address
-  servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  servaddr.sin_port = htons(SERV_PORT);
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  server_addr.sin_port = htons(SERV_PORT);
 
-  bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+  bind(socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-  listen(listenfd, LISTENQ);
+  listen(socket_fd, LISTENQ);
 
   printf("%s\n", "Server running...waiting for connections.");
 
   for (;;)
   {
-
-    clilen = sizeof(cliaddr);
-    connfd = accept(listenfd, (struct sockaddr *)&cliaddr, &clilen);
+    int connfd = accept(socket_fd, (struct sockaddr *)&client_addr, &socket_len);
     printf("%s\n", "Received request...");
 
-    while ((n = recv(connfd, buf, MAXLINE, 0)) > 0)
+    while (recv(connfd, buffer, BUFFER_SIZE, 0) > 0)
     {
       int i = 0;
       char currency[12];
       char value[20];
-      int n = strlen(buf);
+      int n = strlen(buffer);
 
-      while (buf[i] != ' ')
+      while (buffer[i] != ' ')
       {
-        currency[i] = buf[i];
+        currency[i] = buffer[i];
         i++;
       }
       int j = 0;
       while (j < n)
       {
-        value[j] = buf[i];
+        value[j] = buffer[i];
         i++;
         j++;
       }
@@ -73,13 +74,8 @@ int main(int argc, char **argv)
       send(connfd, value, n, 0);
     }
 
-    if (n < 0)
-    {
-      perror("Read error");
-      exit(1);
-    }
     close(connfd);
   }
   // close listening socket
-  close(listenfd);
+  close(socket_fd);
 }

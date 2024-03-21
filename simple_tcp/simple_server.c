@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 1024
 #define SERVER_PORT 3000
 #define LISTENQ 8 /*maximum number of client connections */
 

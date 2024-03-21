@@ -6,7 +6,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 1024
 #define SERVER_PORT 3000
 
 int main(int argc, char **argv)

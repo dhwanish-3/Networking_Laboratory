@@ -9,60 +9,42 @@
 #include <sys/types.h>
 #include <time.h>
 
-#define MAXLINE 1024
+#define BUFFER_SIZE 1024
 #define LISTENQ 10
-
-typedef struct sockaddr SA;
 
 int main(int argc, char **argv)
 {
-    int sockfd, n;
-    char recvline[MAXLINE + 1];
-    struct sockaddr_in servaddr;
-    int port;
+    char recvline[BUFFER_SIZE + 1];
+    struct sockaddr_in server_addr;
 
     if (argc != 3)
     {
-        printf("Usage: a.out <IPaddress> <port no.>"); // Print usage if incorrect number of arguments provided
-    }
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    {                           // Creates a TCP Socket
-        printf("Socket Error"); // Print error if socket creation fails
+        printf("Usage: ./a.out <IP Address> <Port number>");
     }
 
-    port = atoi(argv[2]); // ascii to integer conversion
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0); // Creates a TCP Socket
+    if (sockfd < 0)
+    {
+        printf("Socket creation error\n");
+    }
 
-    bzero(&servaddr, sizeof(servaddr)); // fills servaddr with zeros.
+    // initialize the server address structure
+    bzero(&server_addr, sizeof(server_addr)); // fills server_addr with zeros.
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr(argv[1]);
+    server_addr.sin_port = htons(atoi(argv[2]));
 
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(port);
-
-    if (inet_pton(AF_INET, argv[1], &servaddr.sin_addr) <= 0)
+    if (inet_pton(AF_INET, argv[1], &server_addr.sin_addr) <= 0)
     {
         // pton = presentatin to network
-        printf("inet_pton error for %s", argv[1]); // Print error if IP address conversion fails
+        printf("inet_pton error for %s", argv[1]);
     }
 
-    if (connect(sockfd, (SA *)&servaddr, sizeof(servaddr)) < 0)
-    {
-        // Establishes a TCP Connnection
-        printf("Connect Error.\n"); // Print error if connection fails
-    }
+    connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-    while ((n = read(sockfd, recvline, MAXLINE)) > 0)
+    while (read(sockfd, recvline, BUFFER_SIZE) > 0)
     {
-        // reads server reply.
-        recvline[n] = 0;
-
-        if (fputs(recvline, stdout) == EOF)
-        {
-            printf("fputs error.\n"); // Print error if writing to stdout fails
-        }
-    }
-
-    if (n < 0)
-    {
-        printf("read error"); // Print error if reading from socket fails
+        fputs(recvline, stdout); // print the received data
     }
     return 0;
 }
