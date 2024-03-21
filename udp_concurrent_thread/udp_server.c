@@ -5,9 +5,10 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
 #define MAX_STATION_NUM 10
-#define MAXLINE 1024
-#define FORECAST_PORT 3000
+#define BUFFER_SIZE 1024
+#define SERVER_PORT 3000
 
 // total number of requests so far
 int total_requests = 0;
@@ -29,14 +30,13 @@ struct thread_arguments
 // The entry point for the threads
 static void *send_response(void *arg)
 {
-    char out[MAXLINE];
-    int fd;
+    char out[BUFFER_SIZE];
     struct thread_arguments *args;
 
     // Cast the arguments
     args = (struct thread_arguments *)arg;
 
-    memset(&out, 0, MAXLINE);
+    memset(&out, 0, BUFFER_SIZE);
 
     // Print the arguments
     printf("Station Index: %d\n", args->station_index);
@@ -64,9 +64,9 @@ static void *send_response(void *arg)
         }
     }
     printf("Average temperature: %.2f\n\n\n", (float)sum / count);
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
-    // sendto(fd, out, MAXLINE, 0, &(args->client_address), args->client_length);
-    close(fd);
+    int socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    // sendto(socket_fd, out, BUFFER_SIZE, 0, &(args->client_address), args->client_length);
+    close(socket_fd);
 
     // Free the memory used by the arguments
     // (Caller Allocates/Callee Frees)
@@ -83,42 +83,41 @@ int main(void)
         data[i][0] = 0;
         data[i][1] = 0;
     }
-    char in[MAXLINE];
-    int fd;
+    char buffer[BUFFER_SIZE];
     pthread_t helper; // A thread to handle the response
     struct sockaddr_in address, client_address;
     struct thread_arguments *args;
     socklen_t client_length = sizeof(struct sockaddr);
 
-    // Create an IP4/UDP socket
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    // create an UDP socket
+    int socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    // Initialize the address of this host
+    // initialize the address of this host
     memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET;
-    address.sin_port = htons(FORECAST_PORT);
+    address.sin_port = htons(SERVER_PORT);
     address.sin_addr.s_addr = htonl(INADDR_ANY); // In case the host has multiple
 
-    // Bind the socket to the address
-    bind(fd, (struct sockaddr *)&address, sizeof(struct sockaddr));
+    // bind the socket to the address
+    bind(socket_fd, (struct sockaddr *)&address, sizeof(struct sockaddr));
 
-    // Process requests
-    while (1)
+    // processing requests
+    while (3)
     {
         // Receive the request
-        recvfrom(fd, in, MAXLINE, 0,
+        recvfrom(socket_fd, buffer, BUFFER_SIZE, 0,
                  (struct sockaddr *)&client_address, &client_length);
 
         total_requests++;
         printf("Received request from %s\n", inet_ntoa(client_address.sin_addr));
-        printf("Request: %s\n", in);
+        printf("Request: %s\n", buffer);
 
-        // in will in the format of "station_index temperature battery_level\n"
+        // buffer will buffer the format of "station_index temperature battery_level\n"
         // Parse the request and store the information
         int station_index;
         int temperature;
         int battery_level;
-        sscanf(in, "%d %d %d", &station_index, &temperature, &battery_level);
+        sscanf(buffer, "%d %d %d", &station_index, &temperature, &battery_level);
 
         // Make a copy of the message and the client address
         // for the thread that will handle the response
@@ -134,5 +133,5 @@ int main(void)
         pthread_detach(helper);
     }
 
-    close(fd);
+    close(socket_fd);
 }

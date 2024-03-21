@@ -8,7 +8,8 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-#define LISTENQ 8 // Define the maximum number of pending connections in the listen queue
+#define BUFFER_SIZE 1024
+#define LISTENQ 8 // maximum number of pending connections in the listen queue
 
 struct thread_arguments // Define a structure for thread arguments
 {
@@ -22,10 +23,10 @@ static void *sender(void *arg)
     struct thread_arguments *args;         // a pointer to the thread arguments structure
     args = (struct thread_arguments *)arg; // Cast the argument to the thread arguments structure
 
-    int n, sockfd;
     struct sockaddr_in servaddr; //  a structure for the server address
 
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) // Create a TCP socket
+    int socket_fd = socket(AF_INET, SOCK_STREAM, 0); // Create a TCP socket
+    if (socket_fd < 0)
     {
         perror("Problem in creating the socket");
         exit(2);
@@ -36,8 +37,8 @@ static void *sender(void *arg)
     servaddr.sin_addr.s_addr = inet_addr(args->ip); // Set the IP address
     servaddr.sin_port = htons(args->port);          // Set the port number
 
-    sleep(5);                                                                // Sleep for 5 seconds
-    if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) // Connect to the server
+    sleep(5);                                                                   // Sleep for 5 seconds
+    if (connect(socket_fd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) // Connect to the server
     {
         perror("Problem in connecting to the server");
         exit(3);
@@ -47,11 +48,11 @@ static void *sender(void *arg)
         printf("Connection success\n");
     }
 
-    char buf[1024]; //  a buffer for storing the message
+    char buffer[BUFFER_SIZE]; //  a buffer for storing the message
 
-    while ((n = scanf("%[^\n]%*c", buf)) > 0)
+    while (scanf("%[^\n]%*c", buffer) > 0)
     {
-        send(sockfd, buf, strlen(buf) + 1, 0); // Send the message to the server
+        send(socket_fd, buffer, strlen(buffer) + 1, 0); // Send the message to the server
     }
 }
 
@@ -61,11 +62,11 @@ static void *receiver(void *arg)
     struct thread_arguments *args;
     args = (struct thread_arguments *)arg; // Cast the argument to the thread arguments structure
 
-    int n, listenfd, connfd;
     struct sockaddr_in cliaddr, servaddr;
-    socklen_t clilen;
+    socklen_t socket_len;
 
-    if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) // Create a TCP socket for listening
+    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (socket_fd < 0) // Create a TCP socket for listening
     {
         perror("Problem in creating the socket");
         exit(2);
@@ -75,26 +76,26 @@ static void *receiver(void *arg)
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY); // Set the IP address to any available interface
     servaddr.sin_port = htons(args->port);        // Set the port number
 
-    bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr)); // Bind the socket to the server address
-    listen(listenfd, LISTENQ);                                      // Start listening for incoming connections
+    bind(socket_fd, (struct sockaddr *)&servaddr, sizeof(servaddr)); // Bind the socket to the server address
+    listen(socket_fd, LISTENQ);                                      // Start listening for incoming connections
     printf("Client is listening %d\n", args->port);
-    connfd = accept(listenfd, (struct sockaddr *)&cliaddr, &clilen); // Accept a connection from a client
+    int connectfd = accept(socket_fd, (struct sockaddr *)&cliaddr, &socket_len); // Accept a connection from a client
 
-    char buf[1024];
+    char buffer[BUFFER_SIZE];
 
-    while ((n = recv(connfd, buf, 1024, 0)) > 0) // Receive a message from the client
+    while (recv(connectfd, buffer, BUFFER_SIZE, 0) > 0) // Receive a message from the client
     {
-        printf("[RECV] %s\n", buf);
+        printf("[RECV] %s\n", buffer);
     }
 }
 
 int main(int argc, char **argv)
 {
-    int listenfd, sockfd, connfd;
+    int socket_fd, socket_fd, connectfd;
     struct sockaddr_in cliaddr, servaddr;
     pthread_t h1, h2;                     // thread identifiers
     struct thread_arguments *args, *argr; // pointers to the thread arguments structures
-    socklen_t clilen;                     // a variable for the client address length
+    socklen_t socket_len;                 // a variable for the client address length
 
     if (argc != 4) // Check if the number of command-line arguments is correct
     {

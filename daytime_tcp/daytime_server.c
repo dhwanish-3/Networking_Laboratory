@@ -9,41 +9,38 @@
 #include <sys/types.h>
 #include <time.h>
 
-#define MAXLINE 1024
+#define BUFFER_SIZE 1024
 #define LISTENQ 10
 
 typedef struct sockaddr SA;
 
 int main(int argc, char **argv)
 {
-    int listenfd, connfd;
-    struct sockaddr_in servaddr, cliaddr;
-    char buff[MAXLINE];
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t socket_len = sizeof(struct sockaddr);
+    char buffer[BUFFER_SIZE];
     time_t ticks;
-    int port;
-    socklen_t len;
 
-    listenfd = socket(AF_INET, SOCK_STREAM, 0); // Creates a TCP Socket
+    int socket_fd = socket(AF_INET, SOCK_STREAM, 0); // creates a TCP Socket
 
-    port = atoi(argv[1]);
-    bzero(&servaddr, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(port);
+    // initialize the server address structure
+    bzero(&server_addr, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_port = htons(atoi(argv[1]));
 
-    bind(listenfd, (SA *)&servaddr, sizeof(servaddr));
-    printf("Server is waiting connection at port %d\t\n", port);
-    listen(listenfd, LISTENQ);
+    bind(socket_fd, (SA *)&server_addr, sizeof(server_addr));
+    printf("Server is waiting connection at port %d\t\n", atoi(argv[1]));
+    listen(socket_fd, LISTENQ);
 
     for (;;)
     {
-        len = sizeof(cliaddr);
-        connfd = accept(listenfd, (SA *)&cliaddr, &len);
-        printf("Connection from %s, port %d\n", inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, buff, sizeof(buff)), ntohs(cliaddr.sin_port));
-        ticks = time(NULL);
-        snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
-        write(connfd, buff, strlen(buff));
-        close(connfd);
+        int connectfd = accept(socket_fd, (SA *)&client_addr, &socket_len);
+        printf("Connection from %s, port %d\n", inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, buffer, sizeof(buffer)), ntohs(client_addr.sin_port));
+        ticks = time(NULL); // get the current time
+        snprintf(buffer, sizeof(buffer), "%.24s\r\n", ctime(&ticks)); // format the time
+        write(connectfd, buffer, strlen(buffer)); // send the time to the client
+        close(connectfd);
     }
     return 0;
 }

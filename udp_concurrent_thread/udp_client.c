@@ -7,14 +7,14 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define MAXLINE 1024   /*max text line length*/
+#define BUFFER_SIZE 1024   /*max text line length*/
 #define SERV_PORT 3000 /*port*/
 
 int main(int argc, char **argv)
 {
     int sockfd;
     struct sockaddr_in servaddr;
-    char sendline[MAXLINE], recvline[MAXLINE];
+    char sendline[BUFFER_SIZE], recvline[BUFFER_SIZE];
 
     // basic check for number of arguments
     if (argc != 2)
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     printf("Enter data to be sent to the server\n");
     printf("Format is <station_index> <temperature> <battery_level>\n");
 
-    fgets(sendline, MAXLINE, stdin); // Send the station name to the server
+    fgets(sendline, BUFFER_SIZE, stdin); // Send the station name to the server
     if (sendto(sockfd, sendline, strlen(sendline), 0, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
     {
         perror("sendto error");
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     }
 
     // Receive the response from the server
-    // ssize_t recv_len = recvfrom(sockfd, recvline, MAXLINE, 0, NULL, NULL);
+    // ssize_t recv_len = recvfrom(sockfd, recvline, BUFFER_SIZE, 0, NULL, NULL);
     // if (recv_len < 0)
     // {
     //     perror("recvfrom error");
