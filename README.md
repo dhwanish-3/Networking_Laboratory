@@ -43,14 +43,16 @@ cd Networking_Laboratory
     ./<server-object-name>
     ./<client-object-name> <server-ip-address>
     ```
-    - Save the file you want to run. Compile and run the latest modified file using bash script
+    - Using shell script files run_server and run_client
+    1. save the server file you want to run
     ```
-    ./run.sh
+    ./run_server.sh <port number if required>
     ```
-    - Save a file in any folder which contains *Makefile*
+    2. save the client file you want to run
     ```
-    ./make_run.sh
+    ./run_client.sh <port number if required>
     ```
+    IP address will be taken using hostname -I cmd in the script file so no need to give as argument 
 
 ## Usage
 
