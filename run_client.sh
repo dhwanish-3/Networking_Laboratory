@@ -14,16 +14,18 @@ cd "$dir"
 # compiling the files using 
 make
 
-# removing the characters after _ in filename
-base=$(echo $filename | cut -f 1 -d '_')
-
-# appending _client to the base name
-client=$base"_client"
-
 # getting the ip address
 ipaddress=$(hostname -I | cut -f1 -d' ')
 
 # run the client
-echo "running client $client"
+echo "running client $filename"
 
-"./$client" "$ipaddress"
+portnumber=$1
+
+# if the number of arguments is 1 then 
+# run the client with the ip address and port number
+if [ $# -eq 1 ]; then
+    "./$filename" "$ipaddress" "$portnumber"
+else
+    "./$filename" "$ipaddress"
+fi

@@ -14,12 +14,14 @@ cd "$dir"
 # compiling the files using 
 make
 
-# removing the characters after _ in filename
-base=$(echo $filename | cut -f 1 -d '_')
-
-# appending _server to the base name
-server=$base"_server"
-
 # run the server
-echo "running server $server"
-"./$server"
+echo "running server $filename"
+
+portnumber=$1
+
+# if portnumber is given as argument then run with portnumber
+if [ $# -eq 1 ]; then
+    "./$filename" "$portnumber"
+else
+    "./$filename"
+fi

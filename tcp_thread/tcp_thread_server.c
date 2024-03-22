@@ -24,7 +24,7 @@ static void *handle_client(void *arg)
     char buffer[BUFFER_SIZE] = {0};
     while (recv(client->connectfd, buffer, BUFFER_SIZE, 0) > 0)
     {
-        printf("String received from client :");
+        printf("String received from client : ");
         puts(buffer);
         strcpy(buffer, "Thank you Dhwanish\n");
         send(client->connectfd, buffer, BUFFER_SIZE, 0);
