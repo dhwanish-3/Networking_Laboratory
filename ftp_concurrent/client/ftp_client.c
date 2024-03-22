@@ -4,7 +4,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#define SIZE 1024
+#define SIZE 4096
 #define PORT 8080
 
 void write_file(int sockfd, char filename[]) // Function to write received data to a file
@@ -17,9 +17,12 @@ void write_file(int sockfd, char filename[]) // Function to write received data 
         perror("Error in creating file.");
         exit(1);
     }
+    long completed = 0;
     while (1) // Loop to receive data until the end
     {
         int n = recv(sockfd, buffer, SIZE, 0); // Receive data from the socket
+        completed += n;
+        printf("%ld bytes received...\n", completed);
         if (n <= 0)
         {
             return;
@@ -49,6 +52,7 @@ int main(int argc, char **argv)
     }
     printf("Server socket created. \n");
 
+    bzero(&server_addr, sizeof(server_addr));         // Clear the server address structure
     server_addr.sin_family = AF_INET;                 // Set address family
     server_addr.sin_port = htons(PORT);               // Set PORT number
     server_addr.sin_addr.s_addr = inet_addr(argv[1]); // Set server IP address
