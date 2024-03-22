@@ -4,8 +4,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define SIZE 1024
+#define SIZE 4096
 #define PORT 8080
+#define LISTENQ 8
 
 void send_file(FILE *fp, int socket_fd)
 {
@@ -25,7 +26,7 @@ void send_file(FILE *fp, int socket_fd)
 int main()
 {
     struct sockaddr_in server_addr, client_addr;
-    socklen_t socket_len;
+    socklen_t socket_len = sizeof(struct sockaddr);
     char buffer[SIZE];
 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0); // Create a socket for the server
@@ -35,22 +36,22 @@ int main()
         exit(1);
     }
 
+    bzero(&server_addr, socket_len);
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // Bind to any available network interface
     server_addr.sin_port = htons(PORT);              // Set the PORT number
 
-    bind(socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)); // Bind the socket to the server address
+    bind(socket_fd, (struct sockaddr *)&server_addr, socket_len); // Bind the socket to the server address
 
-    listen(socket_fd, 10); // Listen for incoming connections
+    listen(socket_fd, LISTENQ); // Listen for incoming connections
 
-    socket_len = sizeof(client_addr);
-
+    printf("Server running at port : %d \n", PORT);
     while (3)
     {
         // accept a connection
         int connectfd = accept(socket_fd, (struct sockaddr *)&client_addr, &socket_len); // Accept a new connection
 
-        printf("Received request...");
+        printf("Received request... \n");
         pid_t childpid;
 
         if ((childpid = fork()) == 0)
@@ -58,15 +59,15 @@ int main()
 
             close(socket_fd); // Close the listening socket in the child process
 
-            int n = recv(connectfd, buffer, SIZE, 0); // Receive the file name from the client
-            FILE *fp = fopen(buffer, "r");            // Open the file in read mode
+            recv(connectfd, buffer, SIZE, 0); // Receive the file name from the client
+            FILE *fp = fopen(buffer, "r");    // Open the file in read mode
             if (fp == NULL)
             {
                 perror("FILE does not exist");
                 exit(2); // Exit the child process
             }
             send_file(fp, connectfd); // Send the file to the client
-            printf("Data written in the text file.\n");
+            printf("Requested file transferred successfully\n");
             exit(0);
         }
         // close socket of the server

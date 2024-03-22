@@ -23,7 +23,7 @@ static void *sender(void *arg)
     struct thread_arguments *args;         // a pointer to the thread arguments structure
     args = (struct thread_arguments *)arg; // Cast the argument to the thread arguments structure
 
-    struct sockaddr_in servaddr; //  a structure for the server address
+    struct sockaddr_in server_addr; //  a structure for the server address
 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0); // Create a TCP socket
     if (socket_fd < 0)
@@ -32,13 +32,13 @@ static void *sender(void *arg)
         exit(2);
     }
 
-    memset(&servaddr, 0, sizeof(servaddr));         // Clear the server address structure
-    servaddr.sin_family = AF_INET;                  // Set the address family to IPv4
-    servaddr.sin_addr.s_addr = inet_addr(args->ip); // Set the IP address
-    servaddr.sin_port = htons(args->port);          // Set the port number
+    memset(&server_addr, 0, sizeof(server_addr));      // Clear the server address structure
+    server_addr.sin_family = AF_INET;                  // Set the address family to IPv4
+    server_addr.sin_addr.s_addr = inet_addr(args->ip); // Set the IP address
+    server_addr.sin_port = htons(args->port);          // Set the port number
 
-    sleep(5);                                                                   // Sleep for 5 seconds
-    if (connect(socket_fd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) // Connect to the server
+    sleep(5);                                                                         // Sleep for 5 seconds
+    if (connect(socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) // Connect to the server
     {
         perror("Problem in connecting to the server");
         exit(3);
@@ -62,7 +62,7 @@ static void *receiver(void *arg)
     struct thread_arguments *args;
     args = (struct thread_arguments *)arg; // Cast the argument to the thread arguments structure
 
-    struct sockaddr_in cliaddr, servaddr;
+    struct sockaddr_in client_addr, server_addr;
     socklen_t socket_len;
 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -72,14 +72,15 @@ static void *receiver(void *arg)
         exit(2);
     }
 
-    servaddr.sin_family = AF_INET;                // Set the address family to IPv4
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY); // Set the IP address to any available interface
-    servaddr.sin_port = htons(args->port);        // Set the port number
+    memset(&server_addr, 0, sizeof(server_addr));    // Clear the server address structure
+    server_addr.sin_family = AF_INET;                // Set the address family to IPv4
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // Set the IP address to any available interface
+    server_addr.sin_port = htons(args->port);        // Set the port number
 
-    bind(socket_fd, (struct sockaddr *)&servaddr, sizeof(servaddr)); // Bind the socket to the server address
-    listen(socket_fd, LISTENQ);                                      // Start listening for incoming connections
+    bind(socket_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)); // Bind the socket to the server address
+    listen(socket_fd, LISTENQ);                                            // Start listening for incoming connections
     printf("Client is listening %d\n", args->port);
-    int connectfd = accept(socket_fd, (struct sockaddr *)&cliaddr, &socket_len); // Accept a connection from a client
+    int connectfd = accept(socket_fd, (struct sockaddr *)&client_addr, &socket_len); // Accept a connection from a client
 
     char buffer[BUFFER_SIZE];
 
@@ -91,11 +92,8 @@ static void *receiver(void *arg)
 
 int main(int argc, char **argv)
 {
-    int socket_fd, socket_fd, connectfd;
-    struct sockaddr_in cliaddr, servaddr;
     pthread_t h1, h2;                     // thread identifiers
     struct thread_arguments *args, *argr; // pointers to the thread arguments structures
-    socklen_t socket_len;                 // a variable for the client address length
 
     if (argc != 4) // Check if the number of command-line arguments is correct
     {
